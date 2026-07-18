@@ -1,0 +1,48 @@
+name: Build Runtime (CET disabled)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'eng/native/configurecompiler.cmake'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build CLR (coreclr.dll)
+        run: .\build.cmd clr -c release -arch x64
+        shell: cmd
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Build hostfxr
+        run: .\build.cmd hostfxr -c release -arch x64
+        shell: cmd
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: runtime-cetfix-win-x64
+          path: |
+            artifacts/bin/coreclr/**
+            artifacts/bin/hostfxr/**
