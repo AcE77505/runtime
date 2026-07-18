@@ -27,8 +27,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Build CLR + CoreHost
-        run: .\build.cmd clr+hosts -c release -arch x64
+      - name: Build CLR
+        run: .\build.cmd clr -c release -arch x64
+        shell: cmd
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Build CoreHost
+        run: |
+          dotnet msbuild src\native\corehost\corehost.proj /restore /p:Configuration=release /p:TargetArchitecture=x64 /p:TargetOS=windows
         shell: cmd
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -39,5 +46,5 @@ jobs:
           name: runtime-cetfix-win-x64
           path: |
             artifacts/bin/coreclr/**
-            artifacts/bin/hostfxr/**
-            artifacts/bin/hostpolicy/**
+            artifacts/bin/**/hostfxr*
+            artifacts/bin/**/hostpolicy*
