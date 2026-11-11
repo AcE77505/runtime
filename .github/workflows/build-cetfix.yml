@@ -27,24 +27,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Build CLR
-        run: .\build.cmd clr -c release -arch x64
+      - name: Build Runtime Packages
+        run: .\build.cmd -subset clr+libs+host+packs -c release -arch x64
         shell: cmd
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
-      - name: Build CoreHost
-        run: |
-          dotnet msbuild src\native\corehost\corehost.proj /restore /p:Configuration=release /p:TargetArchitecture=x64 /p:TargetOS=windows
-        shell: cmd
-        env:
-          DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
-      - name: Upload artifacts
+      - name: Upload installable packages
         uses: actions/upload-artifact@v7
         with:
           name: runtime-cetfix-win-x64
-          path: |
-            artifacts/bin/coreclr/**
-            artifacts/bin/**/hostfxr*
-            artifacts/bin/**/hostpolicy*
+          path: artifacts/packages/Release/Shipping/**
+          if-no-files-found: error
